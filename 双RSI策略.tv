@@ -1,0 +1,37 @@
+//@version=6
+strategy("Price with RSI", overlay=true, initial_capital=1000, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
+
+// 获取日线的 RSI
+dailyRSI = request.security(syminfo.tickerid, "D", ta.rsi(close, 7))
+
+// 获取小时线的 RSI
+hourlyRSI = ta.rsi(close, 7)
+
+// 绘制条件 RSI
+plot(hourlyRSI, title="Conditional Hourly RSI", color=color.new(color.red, 0))
+
+bgcolor(dailyRSI > 60 ? #4caf4f60 : na ,force_overlay = true)
+
+// 添加水平线
+hline(60, "Overbought", color=#000000)
+hline(40, "Oversold", color=#000000)
+
+// 变量初始化
+var float stopLossPrice = na
+var float takeProfitPrice = na
+lowest = ta.lowest(5)
+
+// 买入条件
+if ta.crossover(hourlyRSI, 40) and dailyRSI > 60
+    strategy.entry("买入", strategy.long)
+    stopLossPrice := lowest
+    takeProfitPrice := close + 2 * (close - lowest)
+
+if dailyRSI < 60 and strategy.position_size > 0
+    strategy.close("买入")
+
+// 退出条件
+if strategy.position_size > 0
+    strategy.exit("Exit", "买入", stop=stopLossPrice, limit=takeProfitPrice)
+
+plot(stopLossPrice,color = color.black,force_overlay = true)
