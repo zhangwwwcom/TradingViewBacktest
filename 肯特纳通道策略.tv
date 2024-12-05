@@ -1,0 +1,67 @@
+//@version=6
+strategy("KC Strategy", overlay=true,initial_capital=1000, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
+
+ma = ta.sma(close, 50)
+rangema = ta.atr(10)
+upperIn = ma + rangema * 2.75
+lowerIn = ma - rangema * 2.75
+
+upperOut = ma + rangema * 3.75
+lowerOut = ma - rangema * 3.75
+
+uIn = plot(upperIn, color=#2962FF, title="Upper")
+uOut = plot(upperOut, color=#2962FF, title="Upper")
+plot(ma, color=#2962FF, title="Basis")
+lIn = plot(lowerIn, color=#2962FF, title="Lower")
+lOut = plot(lowerOut, color=#2962FF, title="Lower")
+
+fill(lIn, lOut, color=#008cffab, title="Background")
+fill(uIn, uOut, color=#008cffab, title="Background")
+
+var float stopLossPriceShort = na
+var float takeProfitPriceShort = na
+var float stopLossPriceLong = na
+var float takeProfitPriceLong = na
+
+lowest = ta.lowest(5)
+highest = ta.highest(5)
+
+var entryingShort = false
+var entryingLong = false
+
+// Short Entry Logic
+if close > upperOut
+    entryingShort := true
+
+if (entryingShort and close < upperIn)
+    strategy.entry("开空", strategy.short)
+    entryingShort := false
+    stopLossPriceShort := highest
+    takeProfitPriceShort := close - 1 * (highest - close)
+
+// Long Entry Logic
+if close < lowerOut
+    entryingLong := true
+
+if (entryingLong and close > lowerIn)
+    strategy.entry("开多", strategy.long)
+    entryingLong := false
+    stopLossPriceLong := lowest
+    takeProfitPriceLong := close + 1 * (close - lowest)
+
+// Short Exit
+if strategy.position_size < 0
+    strategy.exit("平空", "开空", 
+                  stop=stopLossPriceShort, 
+                  limit=takeProfitPriceShort)
+
+// Long Exit
+if strategy.position_size > 0
+    strategy.exit("平多", "开多", 
+                  stop=stopLossPriceLong, 
+                  limit=takeProfitPriceLong)
+
+plot(stopLossPriceShort, color=color.red)
+plot(takeProfitPriceShort, color=color.green)
+plot(stopLossPriceLong, color=color.red)
+plot(takeProfitPriceLong, color=color.green)
