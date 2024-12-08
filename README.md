@@ -1,7 +1,6 @@
 # trading
 
-双RSI策略
-RSI趋势策略
+双RSI策略, RSI趋势策略
 
 中文免责申明
 
