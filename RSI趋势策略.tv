@@ -1,6 +1,8 @@
 // This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © zchan2233
 
+讲解地址：https://youtu.be/_SuT9ARPtHk
+
 //@version=5
 strategy("RSI Cross",initial_capital=1000, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
 fastRSI = ta.rsi(close,25)
