@@ -1,6 +1,6 @@
 // This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © zchan2233
-
+视频讲解：https://youtu.be/_wRSX1WQKrA
 //@version=6
 strategy("SuperTrend + RSI", overlay=true)
 
