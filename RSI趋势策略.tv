@@ -1,0 +1,53 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © zchan2233
+
+//@version=5
+strategy("RSI Cross",initial_capital=1000, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
+fastRSI = ta.rsi(close,25)
+slowRSI = ta.rsi(close,100)
+
+plot(fastRSI,color = color.green,force_overlay = false)
+plot(slowRSI,color = color.orange,force_overlay = false)
+
+var string calcGroup = 'Calculation'
+length = input.int(title='ATR Period', defval=20, group=calcGroup)
+mult = input.float(title='ATR Multiplier', step=0.1, defval=3.0, group=calcGroup)
+useClose = input.bool(title='Use Close Price for Extremums', defval=true, group=calcGroup)
+
+
+atr = mult * ta.atr(length)
+
+longStop = (useClose ? ta.highest(close, length) : ta.highest(length)) - atr
+longStopPrev = nz(longStop[1], longStop)
+longStop := close[1] > longStopPrev ? math.max(longStop, longStopPrev) : longStop
+
+shortStop = (useClose ? ta.lowest(close, length) : ta.lowest(length)) + atr
+shortStopPrev = nz(shortStop[1], shortStop)
+shortStop := close[1] < shortStopPrev ? math.min(shortStop, shortStopPrev) : shortStop
+
+var int dir = 1
+dir := close > shortStopPrev ? 1 : close < longStopPrev ? -1 : dir
+
+var float haOpen = na
+haClose = (open + high + low + close) / 4
+haOpen := na(haOpen[1]) ? (open + close) / 2 : (haOpen[1] + haClose[1]) / 2
+haHigh = math.max(high, math.max(haOpen, haClose))
+haLow = math.min(low, math.min(haOpen, haClose))
+
+trendColor = plot(100,color = dir == 1 ? color.rgb(76, 97, 175) : color.red)
+haColor = plot(0,color = haClose > haOpen ? color.rgb(76, 97, 175) : color.red)
+goldenCross = ta.crossover(fastRSI, slowRSI)
+deathCross = ta.crossunder(fastRSI, slowRSI)
+
+
+// barcolor(color = dir == 1 and haClose > haOpen and goldenCross ? color.green : na)
+// barcolor(color = dir != 1 and haClose < haOpen and deathCross ? color.red : na)
+barcolor(color = deathCross ? color.black : na)
+barcolor(color = goldenCross ? color.yellow : na)
+
+
+if dir == 1 and haClose > haOpen and goldenCross
+    strategy.entry("做多",strategy.long)
+
+if dir != 1
+    strategy.close("做多")
